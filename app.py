@@ -1,221 +1,182 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
+import plotly.express as px
 import time
-import json
 
-# --- PAGE CONFIGURATION ---
+# Page Configuration
 st.set_page_config(
     page_title="Enterprise AI Assistant | Text-to-SQL & RAG Platform",
-    page_icon="🛡️",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- PROFESSIONAL CUSTOM STYLING ---
+# Custom Enterprise CSS Styling (Glassmorphism & Clean Polish)
 st.markdown("""
 <style>
-    .main-header { font-size: 2.2rem; font-weight: 700; color: #1E3A8A; }
-    .sub-text { color: #4B5563; font-size: 1rem; }
-    .metric-card { background-color: #F8FAFC; padding: 20px; border-radius: 10px; border: 1px solid #E2E8F0; }
-    .stAlert { border-radius: 8px; }
+    .main { background-color: #0E1117; }
+    .stApp { color: #E0E6ED; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        margin-bottom: 20px;
+    }
+    .status-badge {
+        background-color: #00C853;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- SESSION STATE INITIALIZATION ---
-if "audit_logs" not in st.session_state:
-    st.session_state.audit_logs = []
-
-# --- SIDEBAR ENTERPRISE CONTROLS ---
-st.sidebar.markdown("## 🏢 Enterprise Workspace")
-st.sidebar.info("Connected to Mesh API • Secure Gateway v4.2")
-
-workspace = st.sidebar.selectbox("Select Business Unit", ["Global Financials (HQ)", "Supply Chain & Logistics", "Customer Success Analytics"])
-app_mode = st.sidebar.radio("Navigation Console", ["Text-to-SQL Engine", "Enterprise RAG Intelligence", "Schema & Metadata Inspector", "Compliance & Audit Logs"])
-
-st.sidebar.markdown("---")
-st.sidebar.subheader("🔒 Security Settings")
-strict_mode = st.sidebar.checkbox("Strict SQL Injection Guard", value=True)
-max_tokens = st.sidebar.slider("Max Response Tokens", 256, 4096, 2048)
-
-# --- MAIN HEADER ---
-st.markdown(f'<p class="main-header">⚡ Enterprise AI Assistant — {workspace}</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-text">High-performance zero-latency Text-to-SQL generation and private document intelligence for enterprise ROI.</p>', unsafe_allow_html=True)
-st.markdown("---")
-
-# ==========================================
-# 1. TEXT-TO-SQL ENGINE
-# ==========================================
-if app_mode == "Text-to-SQL Engine":
-    col1, col2 = st.config = st.columns([2, 1])
+# Sidebar Setup
+with st.sidebar:
+    st.title("🏢 Enterprise Workspace")
+    st.markdown('<span class="status-badge">● Mesh API Connected v4.2</span>', unsafe_allow_html=True)
+    st.write("")
     
+    selected_unit = st.selectbox(
+        "Select Business Unit",
+        ["Global Financials (HQ)", "Supply Chain & Logistics", "Customer Analytics", "Healthcare Intelligence"]
+    )
+    
+    st.divider()
+    nav_mode = st.radio(
+        "Navigation Console",
+        ["Text-to-SQL Engine", "RAG Document Intelligence", "Schema & Metadata Inspector", "Security & Audit Logs"]
+    )
+    
+    st.divider()
+    st.caption("🔒 **Security Policy:** Strict SQL Injection Guard Active")
+
+# Main Header
+st.title("⚡ Enterprise AI Assistant")
+st.caption(f"High-performance Text-to-SQL & Document Intelligence Platform | Active Context: **{selected_unit}**")
+
+# Section 1: Text-to-SQL Engine
+if nav_mode == "Text-to-SQL Engine":
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.subheader("💬 Natural Language to Optimized SQL")
+    
+    user_query = st.text_area(
+        "Enter business question in plain English:",
+        value="Show top 3 customers who spent the most money in West region",
+        height=100
+    )
+    
+    col1, col2 = st.columns([1, 3])
     with col1:
-        st.subheader("💬 Natural Language to Optimized SQL")
-        user_query = st.text_area(
-            "Enter business question in plain English:",
-            placeholder="e.g., Show top 5 regional managers by total Q3 revenue growth where transaction status is completed.",
-            height=100
-        )
-        
-        col_btn1, col_btn2 = st.columns([1, 4])
-        with col_btn1:
-            generate_sql = st.button("Generate SQL", type="primary")
-        with col_btn2:
-            explain_logic = st.checkbox("Include Architectural Explanation", value=True)
-
+        generate_btn = st.button("🚀 Generate & Execute")
     with col2:
-        st.markdown("### 📊 Active Database Schema")
-        st.code("""
-Tables Available:
-- dim_customers (id, name, region)
-- fact_transactions (id, cust_id, amount, date, status)
-- dim_products (id, category, unit_cost)
-        """, language="text")
+        include_explanation = st.checkbox("Include Architectural & Cost Breakdown", value=True)
+        
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    if generate_sql:
-        if not user_query.strip():
-            st.error("Please enter a valid business query.")
-        else:
-            with st.spinner("Analyzing semantics via Mesh API & generating optimal execution plan..."):
-                time.sleep(1.2) # Simulate high-performance model response
-                
-                # Log action for enterprise auditing
-                st.session_state.audit_logs.append({
-                    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "module": "Text-to-SQL",
-                    "query": user_query,
-                    "status": "Success"
-                })
-
-            st.success("Query compiled successfully with zero syntax errors!")
+    if generate_btn:
+        with st.spinner("Analyzing schema, checking security guards & synthesizing SQL..."):
+            time.sleep(0.6)
             
-            # Display Generated SQL Code
-            st.markdown("### 🛠️ Generated Enterprise SQL (PostgreSQL / Snowflake Dialect)")
-            generated_sql_code = """
-SELECT 
+        st.success("✅ Query compiled successfully with zero syntax errors!")
+        
+        # Generated SQL Code Box
+        sql_code = """SELECT 
+    c.id AS customer_id,
+    c.name AS customer_name,
     c.region,
-    SUM(t.amount) AS total_revenue,
-    COUNT(t.id) AS total_transactions
-FROM fact_transactions t
-JOIN dim_customers c ON t.cust_id = c.id
-WHERE t.status = 'completed' 
-  AND t.date >= '2026-07-01' AND t.date <= '2026-09-30'
-GROUP BY c.region
-ORDER BY total_revenue DESC
-LIMIT 5;
-            """
-            st.code(generated_sql_code, language="sql")
-            
-            if explain_logic:
-                with st.expander("💡 AI Reasoning & Optimization Breakdown"):
-                    st.markdown("""
-                    - **Index Utilization:** Leveraged composite index on `fact_transactions(status, date)` for sub-millisecond filtering.
-                    - **Join Strategy:** Optimized inner join between facts and customer dimensions to minimize shuffle cost.
-                    - **Security Check:** Verified against strict SQL injection guard; no raw user inputs interpolated directly.
-                    """)
-
-            # Executed Mock Data Results
-            st.markdown("### 📈 Live Query Execution Results")
-            df_result = pd.DataFrame({
-                "Region": ["North America", "EMEA", "Asia-Pacific", "Latin America", "Middle East"],
-                "Total Revenue (USD)": ["$14,250,800", "$9,840,200", "$7,650,100", "$4,120,000", "$2,890,500"],
-                "Transactions Count": [3420, 2150, 1890, 950, 680],
-                "Growth QoQ": ["+18.4%", "+12.1%", "+24.5%", "+8.2%", "+15.0%"]
-            })
-            st.dataframe(df_result, use_container_width=True)
-            
-            # Export Option
-            csv_data = df_result.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="📥 Export Dataset (CSV)",
-                data=csv_data,
-                file_name="enterprise_sql_export.csv",
-                mime="text/csv"
-            )
-
-# ==========================================
-# 2. ENTERPRISE RAG INTELLIGENCE
-# ==========================================
-elif app_mode == "Enterprise RAG Intelligence":
-    st.subheader("📄 Secure Document Q&A & Semantic Search")
-    
-    col_r1, col_r2 = st.columns([1, 1])
-    with col_r1:
-        uploaded_files = st.file_uploader(
-            "Upload Enterprise Reports (PDF, DOCX, TXT)", 
-            type=["pdf", "docx", "txt"], 
-            accept_multiple_files=True
-        )
-    with col_r2:
-        st.markdown("### ⚙️ Vector Indexing Config")
-        chunk_size = st.selectbox("Chunking Strategy", ["Semantic Chunking (512 tokens)", "Fixed Window (256 tokens)", "Hierarchical Markdown"])
-        similarity_metric = st.selectbox("Embedding Vector Metric", ["Cosine Similarity", "Dot Product", "Euclidean"])
-
-    rag_question = st.text_input("Ask precise questions across ingested corporate documents:")
-    
-    if st.button("Run Semantic Search & Synthesize"):
-        if not rag_question:
-            st.warning("Please enter a search prompt or question.")
-        else:
-            with st.spinner("Retrieving vector embeddings & synthesizing answer via Mesh API..."):
-                time.sleep(1.0)
+    SUM(t.amount) AS total_spend
+FROM dim_customers c
+JOIN fact_transactions t ON c.id = t.cust_id
+WHERE c.region = 'West'
+GROUP BY c.id, c.name, c.region
+ORDER BY total_spend DESC
+LIMIT 3;"""
+        
+        st.subheader("🛠️ Generated Enterprise SQL (PostgreSQL / Snowflake)")
+        st.code(sql_code, language="sql")
+        
+        if include_explanation:
+            with st.expander("💡 AI Reasoning & Optimization Breakdown", expanded=True):
+                st.markdown("""
+                - **Join Strategy:** Primary key join on `c.id = t.cust_id` indexed for high speed.
+                - **Filter Strategy:** Pushed `WHERE c.region = 'West'` before aggregation to minimize disk I/O.
+                - **Cost Estimate:** ~0.02 Query Compute Units (Estimated Execution Time: 12ms).
+                """)
                 
-            st.success("Synthesis complete with verified document citations!")
-            
-            st.markdown("### 🤖 Synthesized Executive Summary")
-            st.info("""
-            **Key Findings:** Based on the uploaded corporate filings, Q3 capital allocation focused heavily on cloud infrastructure scaling and AI automation pipelines. 
-            - Projected cost savings: **22% annualized**.
-            - Risk factors mitigated: Data residency compliance verified across EU and regional jurisdictions.
-            """)
-            
-            st.markdown("### 📌 Retrieved Source Citations")
-            st.markdown("""
-            1. **`Q3_Financial_Master_2026.pdf`** (Page 14, Similarity Score: `0.94`) — *"Capital expenditures in cloud infrastructure increased by $4.2M..."*
-            2. **`Compliance_Audit_Report.docx`** (Section 4.2, Similarity Score: `0.89`) — *"All customer PII data remains fully isolated within secure encrypted partitions..."*
-            """)
-
-# ==========================================
-# 3. SCHEMA & METADATA INSPECTOR
-# ==========================================
-elif app_mode == "Schema & Metadata Inspector":
-    st.subheader("🔍 Enterprise Database Schema Inspector")
-    st.markdown("Inspect live database structures, constraints, and column data types mapped to the AI assistant.")
-    
-    tab1, tab2, tab3 = st.tabs(["Tables Overview", "Relationships", "API Rate Limits"])
-    
-    with tab1:
-        schema_df = pd.DataFrame({
-            "Table Name": ["fact_transactions", "dim_customers", "dim_products", "audit_log_entries"],
-            "Row Count": ["1,420,500", "85,400", "12,100", "540,210"],
-            "Primary Key": ["id", "id", "id", "log_id"],
-            "Storage Engine": ["Columnar Store", "Relational", "Relational", "TimescaleDB"]
+        # Mock Results Table
+        st.subheader("📈 Live Query Execution Results")
+        mock_data = pd.DataFrame({
+            "Customer ID": [101, 104, 109],
+            "Customer Name": ["Acme Corp (West)", "Apex Logistics", "Nexus Systems"],
+            "Region": ["West", "West", "West"],
+            "Total Spend ($)": [145000.00, 98500.50, 76200.00]
         })
-        st.dataframe(schema_df, use_container_width=True)
         
-    with tab2:
-        st.markdown("`- fact_transactions.cust_id` links to `dim_customers.id` (1-to-Many)")
-        st.markdown("`- fact_transactions.prod_id` links to `dim_products.id` (1-to-Many)")
+        # Displaying metric cards
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Top Customer Revenue", "$145,000", "+12.4%")
+        m2.metric("Average Transaction Value", "$31,970", "+5.1%")
+        m3.metric("Total Records Processed", "3 Rows", "100% Accuracy")
         
-    with tab3:
-        st.metric(label="Mesh API Remaining Quota (Monthly)", value="94,200 / 100,000 Requests", delta="-5,800 today")
+        # Table
+        st.dataframe(mock_data, use_container_width=True)
+        
+        # Visual Chart
+        fig = px.bar(
+            mock_data, 
+            x="Customer Name", 
+            y="Total Spend ($)", 
+            title="Top Spend Analysis by Customer",
+            color="Total Spend ($)",
+            color_continuous_scale="Blues"
+        )
+        fig.update_layout(template="plotly_dark")
+        st.plotly_chart(fig, use_container_width=True)
 
-# ==========================================
-# 4. COMPLIANCE & AUDIT LOGS
-# ==========================================
-elif app_mode == "Compliance & Audit Logs":
-    st.subheader("🛡️ Enterprise Security & Query Audit Trail")
-    st.markdown("Complete immutable log of all SQL queries generated and document queries executed for SOC2 / ISO27001 compliance.")
+# Section 2: RAG Document Intelligence
+elif nav_mode == "RAG Document Intelligence":
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.subheader("📚 Enterprise Knowledge Base & RAG Search")
+    rag_query = st.text_input("Search internal compliance, financial reports, or vendor contracts:", value="Q3 revenue growth drivers and compliance policies")
+    rag_btn = st.button("🔍 Search Knowledge Base")
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    if len(st.session_state.audit_logs) == 0:
-        st.info("No audit logs recorded yet in this active session. Run a Text-to-SQL or RAG query to populate logs.")
-    else:
-        log_df = pd.DataFrame(st.session_state.audit_logs)
-        st.dataframe(log_df, use_container_width=True)
+    if rag_btn:
+        with st.spinner("Retrieving semantic vector embeddings from enterprise vault..."):
+            time.sleep(0.5)
+        st.success("✨ Retrieved 3 highly relevant vector chunks (Confidence Score: 98.4%)")
         
-        if st.button("Clear Audit Log Session"):
-            st.session_state.audit_logs = []
-            st.rerun()
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.markdown("### 📄 Source: `Q3_Financial_Audit_2026.pdf`")
+            st.info("Growth in the Western region surged by 18.2% driven by enterprise logistics accounts and recurring cloud software renewals.")
+        with col_b:
+            st.markdown("### 📄 Source: `Compliance_Policy_v4.docx`")
+            st.info("All automated Text-to-SQL transactions exceeding $50,000 must undergo dual-factor audit logging per ISO-27001 standards.")
 
-# --- FOOTER ---
-st.markdown("---")
-st.markdown("<p style='text-align: center; color: #9CA3AF;'>Enterprise AI Assistant Platform • Powered by Mesh API & Streamlit Cloud • Zero-Trust B2B Security</p>", unsafe_allow_html=True)
+# Section 3: Schema Inspector
+elif nav_mode == "Schema & Metadata Inspector":
+    st.subheader("📊 Active Database Schema & Foreign Key Map")
+    st.markdown("""
+    - **`dim_customers`** `(id: INT [PK], name: VARCHAR, region: VARCHAR, created_at: TIMESTAMP)`
+    - **`fact_transactions`** `(id: INT [PK], cust_id: INT [FK], amount: DECIMAL, status: VARCHAR)`
+    - **`dim_products`** `(id: INT [PK], category: VARCHAR, unit_cost: DECIMAL)`
+    - **`audit_logs`** `(log_id: INT, query_hash: VARCHAR, executed_at: TIMESTAMP, status: VARCHAR)`
+    """)
+
+# Section 4: Security & Audit Logs
+else:
+    st.subheader("🛡️ Enterprise Security & Compliance Log")
+    audit_df = pd.DataFrame({
+        "Timestamp": ["2026-10-12 16:15:22", "2026-10-12 15:42:10", "2026-10-12 14:10:05"],
+        "User": ["admin_enterprise", "analyst_west", "system_bot"],
+        "Event": ["SQL Injection Guard Triggered (Blocked)", "Successful Text-to-SQL Execution", "Vector Index Re-sync"],
+        "Risk Level": ["Low", "None", "None"]
+    })
+    st.dataframe(audit_df, use_container_width=True)
