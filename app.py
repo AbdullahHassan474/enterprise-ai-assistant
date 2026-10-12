@@ -36,11 +36,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize Groq Client
+# Initialize Groq Client with Auto-Cleanup for Mobile Line Breaks
 @st.cache_resource
 def get_groq_client():
     if "GROQ_API_KEY" in st.secrets:
-        return Groq(api_key=st.secrets["GROQ_API_KEY"])
+        raw_key = str(st.secrets["GROQ_API_KEY"])
+        cleaned_key = "".join(raw_key.split())
+        return Groq(api_key=cleaned_key)
     return None
 
 client = get_groq_client()
