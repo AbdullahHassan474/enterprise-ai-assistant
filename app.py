@@ -36,7 +36,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize Groq Client with Auto-Cleanup for Mobile Line Breaks
+# Initialize Groq Client with Auto-Cleanup
 @st.cache_resource
 def get_groq_client():
     if "GROQ_API_KEY" in st.secrets:
@@ -99,7 +99,7 @@ if nav_mode == "Text-to-SQL Engine":
         if not client:
             st.error("Groq API Key set nahi hai! Secrets check karein.")
         else:
-            with st.spinner("Groq Llama-3-70B model real-time SQL generate kar raha hai..."):
+            with st.spinner("Groq Llama-3 model real-time SQL generate kar raha hai..."):
                 try:
                     prompt = f"""
                     You are an expert PostgreSQL SQL developer. 
@@ -108,9 +108,10 @@ if nav_mode == "Text-to-SQL Engine":
                     Generate ONLY the clean SQL query (no explanation, no markdown formatting block) for the question: "{user_query}"
                     """
                     
+                    # Updated to active Groq fast model
                     response = client.chat.completions.create(
                         messages=[{"role": "user", "content": prompt}],
-                        model="llama-3.1-70b-versatile",
+                        model="llama-3.1-8b-instant",
                         temperature=0.1
                     )
                     
