@@ -99,7 +99,7 @@ if nav_mode == "Text-to-SQL Engine":
         if not client:
             st.error("Groq API Key set nahi hai! Secrets check karein.")
         else:
-            with st.spinner("Groq Llama-3 model real-time SQL generate kar raha hai..."):
+            with st.spinner("Groq Llama model real-time SQL generate kar raha hai..."):
                 try:
                     prompt = f"""
                     You are an expert PostgreSQL SQL developer. 
@@ -110,7 +110,7 @@ if nav_mode == "Text-to-SQL Engine":
                     
                     response = client.chat.completions.create(
                         messages=[{"role": "user", "content": prompt}],
-                        model="llama-3.3-70b-versatile",
+                        model="llama-3.1-8b-instant",
                         temperature=0.1
                     )
                     
@@ -132,7 +132,7 @@ if nav_mode == "Text-to-SQL Engine":
                     
                     fig = px.bar(mock_df, x="Customer Name", y="Total Spend ($)", color="Total Spend ($)", title="Query Visualization Result")
                     fig.update_layout(template="plotly_dark")
-                    st.plotly_chart(fig, use_content_width=True)
+                    st.plotly_chart(fig, use_container_width=True)
 
                 except Exception as e:
                     st.error(f"AI Generation Error: {str(e)}")
