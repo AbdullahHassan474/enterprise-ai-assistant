@@ -108,10 +108,9 @@ if nav_mode == "Text-to-SQL Engine":
                     Generate ONLY the clean SQL query (no explanation, no markdown formatting block) for the question: "{user_query}"
                     """
                     
-                    # Updated to active Groq fast model
                     response = client.chat.completions.create(
                         messages=[{"role": "user", "content": prompt}],
-                        model="llama-3.1-8b-instant",
+                        model="llama-3.3-70b-versatile",
                         temperature=0.1
                     )
                     
@@ -133,7 +132,7 @@ if nav_mode == "Text-to-SQL Engine":
                     
                     fig = px.bar(mock_df, x="Customer Name", y="Total Spend ($)", color="Total Spend ($)", title="Query Visualization Result")
                     fig.update_layout(template="plotly_dark")
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_content_width=True)
 
                 except Exception as e:
                     st.error(f"AI Generation Error: {str(e)}")
