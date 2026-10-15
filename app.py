@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Enterprise CSS for Slick UI
+# Custom Enterprise CSS
 st.markdown("""
 <style>
     .main { background-color: #0E1117; }
@@ -36,7 +36,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize Groq Client with Mobile Key Auto-Cleanup
+# Initialize Groq Client with Auto-Cleanup
 @st.cache_resource
 def get_groq_client():
     if "GROQ_API_KEY" in st.secrets:
@@ -51,7 +51,7 @@ client = get_groq_client()
 with st.sidebar:
     st.title("🏢 Enterprise Workspace")
     if client:
-        st.markdown('<span class="status-badge">● Groq Llama 3.3 Active</span>', unsafe_allow_html=True)
+        st.markdown('<span class="status-badge">● Groq API Connected</span>', unsafe_allow_html=True)
     else:
         st.error("⚠️ Groq Key Missing in Secrets")
         
@@ -99,8 +99,16 @@ if nav_mode == "Text-to-SQL Engine":
         if not client:
             st.error("Groq API Key set nahi hai! Secrets check karein.")
         else:
-            with st.spinner("Groq Llama-3.3-70b model real-time SQL generate kar raha hai..."):
+            with st.spinner("Groq AI real-time SQL generate kar raha hai..."):
                 try:
+                    # Automatically find an active model from user's Groq account
+                    available_models = client.models.list()
+                    target_model = "llama-3.3-70b-versatile" # default preference
+                    
+                    model_ids = [m.id for m in available_models.data if "llama" in m.id.lower()]
+                    if model_ids:
+                        target_model = model_ids[0] # Picks the first available Llama model dynamically!
+
                     prompt = f"""
                     You are an expert PostgreSQL SQL developer. 
                     Given this schema: {SCHEMA_CONTEXT}
@@ -110,13 +118,13 @@ if nav_mode == "Text-to-SQL Engine":
                     
                     response = client.chat.completions.create(
                         messages=[{"role": "user", "content": prompt}],
-                        model="llama-3.3-70b-versatile",
+                        model=target_model,
                         temperature=0.1
                     )
                     
                     sql_code = response.choices[0].message.content.strip()
                     
-                    st.success("✅ Real-time SQL synthesized successfully via Groq API!")
+                    st.success(f"✅ SQL generated successfully using model: `{target_model}`")
                     st.subheader("🛠️ Generated Enterprise SQL")
                     st.code(sql_code, language="sql")
                     
@@ -151,5 +159,4 @@ elif nav_mode == "Schema & Metadata Inspector":
 
 else:
     st.subheader("🛡️ Security Audit Logs")
-    st.write("All LLM requests and SQL guardrail checks are actively logged with zero security breaches.")
-            
+    st.write("All LLM requests and SQL guardrail checks are actively logged.")
