@@ -101,13 +101,19 @@ if nav_mode == "Text-to-SQL Engine":
         else:
             with st.spinner("Groq AI real-time SQL generate kar raha hai..."):
                 try:
-                    # Automatically find an active model from user's Groq account
+                    # Filter out guard and embedding models, strictly target chat models
                     available_models = client.models.list()
-                    target_model = "llama-3.3-70b-versatile" # default preference
+                    target_model = "llama-3.3-70b-versatile"
                     
-                    model_ids = [m.id for m in available_models.data if "llama" in m.id.lower()]
-                    if model_ids:
-                        target_model = model_ids[0] # Picks the first available Llama model dynamically!
+                    valid_models = [
+                        m.id for m in available_models.data 
+                        if "llama" in m.id.lower() 
+                        and "guard" not in m.id.lower() 
+                        and "embed" not in m.id.lower()
+                    ]
+                    
+                    if valid_models:
+                        target_model = valid_models[0]
 
                     prompt = f"""
                     You are an expert PostgreSQL SQL developer. 
@@ -160,3 +166,4 @@ elif nav_mode == "Schema & Metadata Inspector":
 else:
     st.subheader("🛡️ Security Audit Logs")
     st.write("All LLM requests and SQL guardrail checks are actively logged.")
+                    
