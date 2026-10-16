@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from groq import Groq
-import time
 
 # Page Configuration
 st.set_page_config(
@@ -99,8 +98,24 @@ if nav_mode == "Text-to-SQL Engine":
         if not client:
             st.error("Groq API Key set nahi hai! Secrets check karein.")
         else:
-            with st.spinner("Groq AI real-time SQL generate kar raha hai..."):
+            with st.spinner("Aapki key ke mutabiq active model detect aur SQL generate ho raha hai..."):
                 try:
+                    # Automatically fetch models available on this specific API key
+                    models_response = client.models.list()
+                    all_model_ids = [m.id for m in models_response.data]
+                    
+                    # Filter out guard and embedding models, keep chat models
+                    chat_models = [
+                        m for m in all_model_ids 
+                        if "guard" not in m.lower() 
+                        and "embed" not in m.lower()
+                    ]
+                    
+                    if chat_models:
+                        target_model = chat_models[0]
+                    else:
+                        target_model = all_model_ids[0] if all_model_ids else "llama-3.1-8b-instant"
+
                     prompt = f"""
                     You are an expert PostgreSQL SQL developer. 
                     Given this schema: {SCHEMA_CONTEXT}
@@ -110,13 +125,13 @@ if nav_mode == "Text-to-SQL Engine":
                     
                     response = client.chat.completions.create(
                         messages=[{"role": "user", "content": prompt}],
-                        model="llama-3.1-8b-instant",
+                        model=target_model,
                         temperature=0.1
                     )
                     
                     sql_code = response.choices[0].message.content.strip()
                     
-                    st.success("✅ SQL generated successfully using model: `llama-3.1-8b-instant`")
+                    st.success(f"✅ SQL generated successfully using auto-detected model: `{target_model}`")
                     st.subheader("🛠️ Generated Enterprise SQL")
                     st.code(sql_code, language="sql")
                     
@@ -139,7 +154,7 @@ if nav_mode == "Text-to-SQL Engine":
 
 elif nav_mode == "Interactive Sandbox":
     st.subheader("🛠️ Custom SQL Sandbox")
-    st.info("Directly test custom queries against the active enterprise schema context.")
+    st.info("Directly test custom queries against active schema context.")
     custom_sql = st.text_area("Write SQL Query:", "SELECT * FROM dim_customers LIMIT 5;")
     if st.button("Run Query"):
         st.code(custom_sql, language="sql")
@@ -152,4 +167,4 @@ elif nav_mode == "Schema & Metadata Inspector":
 else:
     st.subheader("🛡️ Security Audit Logs")
     st.write("All LLM requests and SQL guardrail checks are actively logged.")
-    
+                    
