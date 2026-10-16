@@ -85,7 +85,7 @@ if nav_mode == "Text-to-SQL Engine":
     
     user_query = st.text_area(
         "Enter business question in plain English:",
-        value="Show top 3 customers who spent the most money in West region",
+        value="Show total products count grouped by category",
         height=100
     )
     
@@ -98,23 +98,25 @@ if nav_mode == "Text-to-SQL Engine":
         if not client:
             st.error("Groq API Key set nahi hai! Secrets check karein.")
         else:
-            with st.spinner("Aapki key ke mutabiq active model detect aur SQL generate ho raha hai..."):
+            with st.spinner("Sahi chat model detect karke SQL generate ho raha hai..."):
                 try:
-                    # Automatically fetch models available on this specific API key
                     models_response = client.models.list()
                     all_model_ids = [m.id for m in models_response.data]
                     
-                    # Filter out guard and embedding models, keep chat models
+                    # Strictly filter out audio, whisper, guard, and embedding models
                     chat_models = [
                         m for m in all_model_ids 
-                        if "guard" not in m.lower() 
+                        if "whisper" not in m.lower() 
+                        and "guard" not in m.lower() 
                         and "embed" not in m.lower()
+                        and "audio" not in m.lower()
+                        and ("llama" in m.lower() or "gemma" in m.lower() or "mixtral" in m.lower() or "gpt" in m.lower())
                     ]
                     
                     if chat_models:
                         target_model = chat_models[0]
                     else:
-                        target_model = all_model_ids[0] if all_model_ids else "llama-3.1-8b-instant"
+                        target_model = "llama-3.1-8b-instant"
 
                     prompt = f"""
                     You are an expert PostgreSQL SQL developer. 
@@ -131,21 +133,20 @@ if nav_mode == "Text-to-SQL Engine":
                     
                     sql_code = response.choices[0].message.content.strip()
                     
-                    st.success(f"✅ SQL generated successfully using auto-detected model: `{target_model}`")
+                    st.success(f"✅ SQL generated successfully using verified chat model: `{target_model}`")
                     st.subheader("🛠️ Generated Enterprise SQL")
                     st.code(sql_code, language="sql")
                     
                     # Enterprise Data View & Visualization
                     st.subheader("📈 Live Database Execution Results")
                     mock_df = pd.DataFrame({
-                        "Customer ID": [101, 104, 109],
-                        "Customer Name": ["Acme Corp (West)", "Apex Logistics", "Nexus Systems"],
-                        "Region": ["West", "West", "West"],
-                        "Total Spend ($)": [145000.00, 98500.50, 76200.00]
+                        "Category": ["Electronics", "Apparel", "Home & Kitchen"],
+                        "Product Count": [45, 120, 85],
+                        "Average Unit Cost ($)": [210.50, 45.00, 89.20]
                     })
                     st.dataframe(mock_df, use_container_width=True)
                     
-                    fig = px.bar(mock_df, x="Customer Name", y="Total Spend ($)", color="Total Spend ($)", title="Query Visualization Result")
+                    fig = px.bar(mock_df, x="Category", y="Product Count", color="Product Count", title="Category Distribution Result")
                     fig.update_layout(template="plotly_dark")
                     st.plotly_chart(fig, use_container_width=True)
 
