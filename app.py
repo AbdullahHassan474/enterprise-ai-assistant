@@ -101,20 +101,6 @@ if nav_mode == "Text-to-SQL Engine":
         else:
             with st.spinner("Groq AI real-time SQL generate kar raha hai..."):
                 try:
-                    # Filter out guard and embedding models, strictly target chat models
-                    available_models = client.models.list()
-                    target_model = "llama-3.3-70b-versatile"
-                    
-                    valid_models = [
-                        m.id for m in available_models.data 
-                        if "llama" in m.id.lower() 
-                        and "guard" not in m.id.lower() 
-                        and "embed" not in m.id.lower()
-                    ]
-                    
-                    if valid_models:
-                        target_model = valid_models[0]
-
                     prompt = f"""
                     You are an expert PostgreSQL SQL developer. 
                     Given this schema: {SCHEMA_CONTEXT}
@@ -124,13 +110,13 @@ if nav_mode == "Text-to-SQL Engine":
                     
                     response = client.chat.completions.create(
                         messages=[{"role": "user", "content": prompt}],
-                        model=target_model,
+                        model="llama-3.1-8b-instant",
                         temperature=0.1
                     )
                     
                     sql_code = response.choices[0].message.content.strip()
                     
-                    st.success(f"✅ SQL generated successfully using model: `{target_model}`")
+                    st.success("✅ SQL generated successfully using model: `llama-3.1-8b-instant`")
                     st.subheader("🛠️ Generated Enterprise SQL")
                     st.code(sql_code, language="sql")
                     
@@ -166,4 +152,4 @@ elif nav_mode == "Schema & Metadata Inspector":
 else:
     st.subheader("🛡️ Security Audit Logs")
     st.write("All LLM requests and SQL guardrail checks are actively logged.")
-                    
+    
